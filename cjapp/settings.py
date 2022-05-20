@@ -66,7 +66,7 @@ REST_FRAMEWORK = {
     ],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
-DEFAULT_PORT = "8080"
+DEFAULT_PORT = env('PORT')
 ROOT_URLCONF = 'cjapp.urls'
 
 TEMPLATES = [
