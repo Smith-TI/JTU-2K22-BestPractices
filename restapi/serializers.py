@@ -7,39 +7,42 @@ from restapi.models import Category, Groups, UserExpense, Expenses
 
 class UserSerializer(ModelSerializer):
     def create(self, validated_data):
+        # TODO: Find type returned here
         user = User.objects.create_user(**validated_data)
         return user
 
     class Meta(object):
-        model = User
-        fields = ('id', 'username', 'password')
-        extra_kwargs = {
+        model: User = User
+        fields: tuple[str] = ('id', 'username', 'password')
+        extra_kwargs: dict[str, dict[str, bool]] = {
             'password': {'write_only': True}
         }
 
 
 class CategorySerializer(ModelSerializer):
     class Meta(object):
-        model = Category
-        fields = '__all__'
+        model: Category = Category
+        fields: str = '__all__'
 
 
 class GroupSerializer(ModelSerializer):
-    members = UserSerializer(many=True, required=False)
+    members: UserSerializer = UserSerializer(many=True, required=False)
 
     class Meta(object):
-        model = Groups
-        fields = '__all__'
+        model: Groups = Groups
+        fields: str = '__all__'
 
 
 class UserExpenseSerializer(ModelSerializer):
     class Meta(object):
-        model = UserExpense
-        fields = ['user', 'amount_owed', 'amount_lent']
+        model: UserExpense = UserExpense
+        fields: list[str] = ['user', 'amount_owed', 'amount_lent']
 
 
 class ExpensesSerializer(ModelSerializer):
-    users = UserExpenseSerializer(many=True, required=True)
+    # TODO: static typing heres
+    users: UserExpenseSerializer = UserExpenseSerializer(
+        many=True, required=True)
 
     def create(self, validated_data):
         expense_users = validated_data.pop('users')
@@ -67,11 +70,11 @@ class ExpensesSerializer(ModelSerializer):
         return instance
 
     def validate(self, attrs):
-        user_ids = [user['user'].id for user in attrs['users']]
+        user_ids: list = [user['user'].id for user in attrs['users']]
         if len(set(user_ids)) != len(user_ids):
             raise ValidationError('Single user appears multiple times')
         return attrs
 
     class Meta(object):
-        model = Expenses
-        fields = '__all__'
+        model: Expenses = Expenses
+        fields: str = '__all__'

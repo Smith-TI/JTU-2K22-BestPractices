@@ -1,4 +1,6 @@
-from django.urls import path
+from functools import partial
+from typing import Union
+from django.urls import URLPattern, URLResolver, path
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken import views
 
@@ -12,7 +14,7 @@ router.register('categories', category_view_set)
 router.register('groups', group_view_set)
 router.register('expenses', expenses_view_set)
 
-urlpatterns = [
+urlpatterns: list[Union[URLResolver, URLPattern]] = [
     path('', index, name='index'),
     path('auth/logout/', logout),
     path('auth/login/', views.obtain_auth_token),
