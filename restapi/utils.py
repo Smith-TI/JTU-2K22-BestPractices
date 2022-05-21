@@ -1,9 +1,12 @@
 from datetime import datetime
+import logging
+from time import time
 import urllib.request
 
 
 def normalize(expense) -> list:
     '''Normalize the balances for a user'''
+    starttime = int(time.time() * 1000.0)
     user_balances = expense.users.all()
     dues = {}
     for user_balance in user_balances:
@@ -24,6 +27,8 @@ def normalize(expense) -> list:
             start += 1
         else:
             end -= 1
+    endtime = int(time.time() * 1000.0)
+    logging.info(f'Normalized expense in {endtime - starttime}ms')
     return balances
 
 
@@ -60,7 +65,7 @@ def aggregate(cleaned_logs) -> dict:
         data[key] = value
     return data
 
-
+# TODO: rename this
 def transform(logs) -> list:
     '''Clean up logs'''
     result = []

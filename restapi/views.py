@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from decimal import Decimal
+import logging
+from time import time
 
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -26,6 +28,12 @@ def index(_request) -> HttpResponse:
 @api_view(['POST'])
 def logout(request) -> Response:
     '''Log a User out'''
+    if not 'user' in request:
+        return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data="field `user` missing in request")
+    if not 'auth_token' in request.user:
+        return Response(status=status.HTTP_401_UNAUTHORIZED,
+                        data="Auth Token missing in request")
     request.user.auth_token.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -33,7 +41,14 @@ def logout(request) -> Response:
 @api_view(['GET'])
 def balance(request) -> Response:
     '''Get the balance for a user'''
+
+    if not 'user' in request:
+        return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data="field `user` missing in request")
     user = request.user
+
+    starttime = int(time.time() * 1000.0)
+    logging.info(f"Calculating balance for {user}")
     expenses = Expenses.objects.filter(users__in=user.expenses.all())
     final_balance = {}
     for expense in expenses:
@@ -51,6 +66,8 @@ def balance(request) -> Response:
 
     response = [{"user": k, "amount": int(v)}
                 for k, v in final_balance.items()]
+    endtime = int(time.time() * 1000.0)
+    logging.info(f'Calculated balance in {endtime - starttime}ms')
     return Response(response, status=200)
 
 
@@ -75,6 +92,8 @@ class group_view_set(ModelViewSet):
 
     def get_queryset(self):
         '''Returns the queryset for a User'''
+        if not self.request.user:
+            raise ValueError("field `user` missing in request")
         user = self.request.user
         groups = user.members.all()
         if self.request.query_params.get('q', None) is not None:
@@ -84,6 +103,8 @@ class group_view_set(ModelViewSet):
 
     def create(self) -> Response:
         '''Creates a group, adds a user to it and then save it'''
+        if not self.request.user:
+            raise ValueError("field `user` missing in request")
         user = self.request.user
         data = self.request.data
         group = Groups(**data)
@@ -123,6 +144,8 @@ class group_view_set(ModelViewSet):
     @action(methods=['get'], detail=True)
     def balances(self, pk=None) -> Response:
         '''Handle GET method on balances'''
+        starttime = int(time.time() * 1000.0)
+        logging.info(f"Getting balance for Group with id: {pk}")
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
             raise UnauthorizedUserException()
@@ -150,7 +173,9 @@ class group_view_set(ModelViewSet):
                 start += 1
             else:
                 end -= 1
-
+        endtime = int(time.time() * 1000.0)
+        logging.info(
+            f"Calculated balance for Group with id: {pk} in {endtime - starttime}ms")
         return Response(balances, status=200)
 
 
@@ -161,6 +186,9 @@ class expenses_view_set(ModelViewSet):
 
     def get_queryset(self):
         '''Returns the queryset for Expenses'''
+        if not 'user' in self.request:
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data="field `user` missing in request")
         user = self.request.user
         if self.request.query_params.get('q', None) is not None:
             expenses = Expenses.objects.filter(users__in=user.expenses.all())\
@@ -174,14 +202,23 @@ class expenses_view_set(ModelViewSet):
 @authentication_classes([])
 @permission_classes([])
 def logProcessor(request) -> Response:
-    '''Handle POST method on log files'''
+    '''Handle POST method on processing log files'''
+    starttime = int(time.time() * 1000.0)
+
+    if not 'data' in request:
+        return Response(status=status.HTTP_400_BAD_REQUEST,
+                        data={"status": "failure", "reason": "field `data` missing in request"})
     data = request.data
     num_threads = data['parallelFileProcessingCount']
     log_files = data['logFiles']
+    logging.info(
+        f'starting log processor with {num_threads} threads and {len(log_files)} log files')
     if num_threads <= 0 or num_threads > 30:
+        logging.error('Parallel Processing Count out of expected bounds')
         return Response({"status": "failure", "reason": "Parallel Processing Count out of expected bounds"},
                         status=status.HTTP_400_BAD_REQUEST)
     if len(log_files) == 0:
+        logging.error('No log files provided in request')
         return Response({"status": "failure", "reason": "No log files provided in request"},
                         status=status.HTTP_400_BAD_REQUEST)
     logs = multiThreadedReader(
@@ -190,4 +227,6 @@ def logProcessor(request) -> Response:
     cleaned = transform(sorted_logs)
     data = aggregate(cleaned)
     response = response_format(data)
+    endtime = int(time.time() * 1000.0)
+    logging.info(f'Processed log files in {endtime - starttime}ms')
     return Response({"response": response}, status=status.HTTP_200_OK)
