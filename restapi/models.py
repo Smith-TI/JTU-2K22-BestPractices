@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 
 class Category(models.Model):
     """Category Model"""
+    id = models.AutoField(primary_key=True)
     name: models.CharField = models.CharField(max_length=200, null=False)
 
     def __str__(self) -> str:
@@ -16,6 +17,7 @@ class Category(models.Model):
 
 class Groups(models.Model):
     """Groups Model"""
+    id = models.AutoField(primary_key=True)
     name: models.CharField = models.CharField(max_length=100, null=False)
     members: models.ManyToManyField = models.ManyToManyField(
         User, related_name='members', blank=True)
@@ -26,6 +28,7 @@ class Groups(models.Model):
 
 class Expenses(models.Model):
     """Expenses Model"""
+    id = models.AutoField(primary_key=True)
     description: models.CharField = models.CharField(max_length=200)
     total_amount: models.DecimalField = models.DecimalField(
         max_digits=10, decimal_places=2)
@@ -41,6 +44,7 @@ class Expenses(models.Model):
 
 class UserExpense(models.Model):
     """User Expense Model"""
+    id = models.AutoField(primary_key=True)
     expense: models.ForeignKey = models.ForeignKey(
         Expenses, default=1, on_delete=models.CASCADE, related_name="users")
     user: models.ForeignKey = models.ForeignKey(
