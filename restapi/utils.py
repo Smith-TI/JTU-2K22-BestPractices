@@ -3,6 +3,8 @@ import logging
 from time import time
 import urllib.request
 
+from restapi.constants import LOG_FILES_READER_TIMEOUT
+
 
 def normalize(expense) -> list:
     '''Normalize the balances for a user'''
@@ -97,7 +99,7 @@ def multiThreadedReader(urls) -> list:
     """Read multiple files through HTTP"""
     result = []
     for url in urls:
-        with urllib.request.urlopen(url, timeout=60) as conn:
+        with urllib.request.urlopen(url, timeout=LOG_FILES_READER_TIMEOUT) as conn:
             data = conn.read()
             data = data.decode('utf-8')
             result.extend(data.split("\n"))
