@@ -32,7 +32,7 @@ def normalize(expense) -> list:
     return balances
 
 
-def sort_by_time_stamp(logs) -> list:
+def sort_logs_by_time_stamp(logs) -> list:
     '''Sort logs by Time Stamp'''
     data = []
     for log in logs:
@@ -55,7 +55,7 @@ def response_format(raw_data) -> list:
     return response
 
 
-def aggregate(cleaned_logs) -> dict:
+def aggregate_logs(cleaned_logs) -> dict:
     '''Aggregate cleaned logs'''
     data = {}
     for log in cleaned_logs:
@@ -65,8 +65,7 @@ def aggregate(cleaned_logs) -> dict:
         data[key] = value
     return data
 
-# TODO: rename this
-def transform(logs) -> list:
+def clean_up_logs(logs) -> list:
     '''Clean up logs'''
     result = []
     for log in logs:

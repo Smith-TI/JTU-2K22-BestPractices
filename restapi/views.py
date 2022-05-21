@@ -17,7 +17,7 @@ from restapi.serializers import CategorySerializer, Expenses, ExpensesSerializer
 from restapi.custom_exception import UnauthorizedUserException
 from django.db.models import QuerySet
 
-from restapi.utils import aggregate, multiThreadedReader, normalize, response_format, sort_by_time_stamp, transform
+from restapi.utils import aggregate_logs, clean_up_logs, multiThreadedReader, normalize, response_format, sort_logs_by_time_stamp
 
 
 def index(_request) -> HttpResponse:
@@ -188,7 +188,7 @@ class expenses_view_set(ModelViewSet):
         '''Returns the queryset for Expenses'''
         if not 'user' in self.request:
             return Response(status=status.HTTP_400_BAD_REQUEST,
-                        data="field `user` missing in request")
+                            data="field `user` missing in request")
         user = self.request.user
         if self.request.query_params.get('q', None) is not None:
             expenses = Expenses.objects.filter(users__in=user.expenses.all())\
@@ -223,9 +223,9 @@ def logProcessor(request) -> Response:
                         status=status.HTTP_400_BAD_REQUEST)
     logs = multiThreadedReader(
         urls=data['logFiles'], num_threads=data['parallelFileProcessingCount'])
-    sorted_logs = sort_by_time_stamp(logs)
-    cleaned = transform(sorted_logs)
-    data = aggregate(cleaned)
+    sorted_logs = sort_logs_by_time_stamp(logs)
+    cleaned = clean_up_logs(sorted_logs)
+    data = aggregate_logs(cleaned)
     response = response_format(data)
     endtime = int(time.time() * 1000.0)
     logging.info(f'Processed log files in {endtime - starttime}ms')
