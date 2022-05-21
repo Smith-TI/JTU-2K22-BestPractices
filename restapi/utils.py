@@ -89,19 +89,13 @@ def transform(logs) -> list:
     return result
 
 
-def reader(url, timeout):
-    '''Read a file and return it's data'''
-    with urllib.request.urlopen(url, timeout=timeout) as conn:
-        # TODO: Check if this closes the open file
-        return conn.read()
-
-
-def multiThreadedReader(urls, num_threads) -> list:
+def multiThreadedReader(urls) -> list:
     """Read multiple files through HTTP"""
     result = []
     for url in urls:
-        data = reader(url, 60)
-        data = data.decode('utf-8')
-        result.extend(data.split("\n"))
+        with urllib.request.urlopen(url, timeout=60) as conn:
+            data = conn.read()
+            data = data.decode('utf-8')
+            result.extend(data.split("\n"))
     result = sorted(result, key=lambda elem: elem[1])
     return result
