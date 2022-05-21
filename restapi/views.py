@@ -83,7 +83,7 @@ class group_view_set(ModelViewSet):
         return groups
 
     # TODO: remove unused function params
-    def create(self, request, *args, **kwargs) -> Response:
+    def create(self) -> Response:
         '''Creates a group, adds a user to it and then save it'''
         user = self.request.user
         data = self.request.data
@@ -112,7 +112,7 @@ class group_view_set(ModelViewSet):
         return Response(status=204)
 
     @action(methods=['get'], detail=True)
-    def expenses(self, _request, pk=None) -> Response:
+    def expenses(self, pk=None) -> Response:
         '''Handle GET method on expense'''
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
@@ -122,7 +122,7 @@ class group_view_set(ModelViewSet):
         return Response(serializer.data, status=200)
 
     @action(methods=['get'], detail=True)
-    def balances(self, _request, pk=None) -> Response:
+    def balances(self, pk=None) -> Response:
         '''Handle GET method on balances'''
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
