@@ -5,7 +5,5 @@ from django.apps import AppConfig
 
 
 class RestapiConfig(AppConfig):
-    '''
-        Set app config for admin
-    '''
+    '''Set app config for admin'''
     name: str = 'restapi'

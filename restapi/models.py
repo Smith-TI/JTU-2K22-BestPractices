@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from select import select
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -8,7 +9,9 @@ class Category(models.Model):
     """Category Model"""
     name: models.CharField = models.CharField(max_length=200, null=False)
 
-    # TODO: Add str
+    def __str__(self) -> str:
+        """String Representation of the User Expense Model"""
+        return f'Category: {self.name}'
 
 
 class Groups(models.Model):
@@ -16,7 +19,9 @@ class Groups(models.Model):
     name: models.CharField = models.CharField(max_length=100, null=False)
     members: models.ManyToManyField = models.ManyToManyField(
         User, related_name='members', blank=True)
-    # TODO: Add str
+
+    def __str__(self) -> str:
+        return f'Group: {self.name}'
 
 
 class Expenses(models.Model):
@@ -29,7 +34,9 @@ class Expenses(models.Model):
     category: models.ForeignKey = models.ForeignKey(
         Category, default=1, on_delete=models.CASCADE)
 
-    # TODO: Add str
+    def __str__(self) -> str:
+        return f'Description: {self.description}, \
+        Total Amount: {self.total_amount}, Group: {self.group}, Category: {self.category}'
 
 
 class UserExpense(models.Model):
