@@ -82,7 +82,6 @@ class group_view_set(ModelViewSet):
                 name__icontains=self.request.query_params.get('q', None))
         return groups
 
-    # TODO: remove unused function params
     def create(self) -> Response:
         '''Creates a group, adds a user to it and then save it'''
         user = self.request.user

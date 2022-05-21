@@ -12,3 +12,6 @@ If you don't know anything about django-rest-framework don't worry. You don't ha
 2. Run `cp cjapp/.env.sample cjapp/.env` and fill all the fields in it.
 3. Run `python manage.py migrate` to run any missing migrations to the db
 3. Build and run the Docker Container
+
+# Assumptions
+- Added a single test to save time and understand the concept of tests in Django
