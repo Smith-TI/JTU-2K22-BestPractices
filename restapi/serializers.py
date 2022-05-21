@@ -6,7 +6,10 @@ from restapi.models import Category, Groups, UserExpense, Expenses
 
 
 class UserSerializer(ModelSerializer):
+    '''Serializer for the User model'''
+
     def create(self, validated_data) -> User:
+        '''Create a new user from the validated user data'''
         user: User = User.objects.create_user(**validated_data)
         return user
 
@@ -19,12 +22,14 @@ class UserSerializer(ModelSerializer):
 
 
 class CategorySerializer(ModelSerializer):
+    '''Serializer for the Category model'''
     class Meta(object):
         model: Category = Category
         fields: str = '__all__'
 
 
 class GroupSerializer(ModelSerializer):
+    '''Serializer for the Group model'''
     members: UserSerializer = UserSerializer(many=True, required=False)
 
     class Meta(object):
@@ -33,16 +38,19 @@ class GroupSerializer(ModelSerializer):
 
 
 class UserExpenseSerializer(ModelSerializer):
+    '''Serializer for the UserExpense model'''
     class Meta(object):
         model: UserExpense = UserExpense
         fields: list[str] = ['user', 'amount_owed', 'amount_lent']
 
 
 class ExpensesSerializer(ModelSerializer):
+    '''Serializer for the Expenses model'''
     users: UserExpenseSerializer = UserExpenseSerializer(
         many=True, required=True)
 
     def create(self, validated_data) -> Expenses:
+        '''Create a new expense from the validated expense data'''
         expense_users = validated_data.pop('users')
         expense: Expenses = Expenses.objects.create(**validated_data)
         for eu in expense_users:
@@ -50,6 +58,7 @@ class ExpensesSerializer(ModelSerializer):
         return expense
 
     def update(self, instance, validated_data):
+        '''Update an expense instance to the validated expense data'''
         user_expenses = validated_data.pop('users')
         instance.description = validated_data['description']
         instance.category = validated_data['category']
@@ -68,6 +77,7 @@ class ExpensesSerializer(ModelSerializer):
         return instance
 
     def validate(self, attrs):
+        '''Validate an expense'''
         user_ids: list = [user['user'].id for user in attrs['users']]
         if len(set(user_ids)) != len(user_ids):
             raise ValidationError('Single user appears multiple times')

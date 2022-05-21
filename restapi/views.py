@@ -19,17 +19,20 @@ from django.db.models import QuerySet
 
 
 def index(_request) -> HttpResponse:
+    '''Handle the base route'''
     return HttpResponse("Hello, world. You're at Rest.")
 
 
 @api_view(['POST'])
 def logout(request) -> Response:
+    '''Log a User out'''
     request.user.auth_token.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
 def balance(request) -> Response:
+    '''Get the balance for a user'''
     user = request.user
     expenses = Expenses.objects.filter(users__in=user.expenses.all())
     final_balance = {}
@@ -52,6 +55,7 @@ def balance(request) -> Response:
 
 
 def normalize(expense) -> Response:
+    '''Normalize the balances for a user'''
     user_balances = expense.users.all()
     dues = {}
     for user_balance in user_balances:
@@ -76,22 +80,26 @@ def normalize(expense) -> Response:
 
 
 class user_view_set(ModelViewSet):
+    '''View Set for a User'''
     queryset: QuerySet = User.objects.all()
     serializer_class: UserSerializer = UserSerializer
     permission_classes: tuple = (AllowAny,)
 
 
 class category_view_set(ModelViewSet):
+    '''View Set for a Category'''
     queryset: QuerySet = Category.objects.all()
     serializer_class: CategorySerializer = CategorySerializer
     http_method_names: list[str] = ['get', 'post']
 
 
 class group_view_set(ModelViewSet):
+    '''View Set for a Group'''
     queryset: QuerySet = Groups.objects.all()
     serializer_class: GroupSerializer = GroupSerializer
 
     def get_queryset(self):
+        '''Returns the queryset for a User'''
         user = self.request.user
         groups = user.members.all()
         if self.request.query_params.get('q', None) is not None:
@@ -99,7 +107,9 @@ class group_view_set(ModelViewSet):
                 name__icontains=self.request.query_params.get('q', None))
         return groups
 
+    # TODO: remove unused function params
     def create(self, request, *args, **kwargs) -> Response:
+        '''Creates a group, adds a user to it and then save it'''
         user = self.request.user
         data = self.request.data
         group = Groups(**data)
@@ -110,6 +120,7 @@ class group_view_set(ModelViewSet):
 
     @action(methods=['put'], detail=True)
     def members(self, request, pk=None) -> Response:
+        '''Handle PUT method on members'''
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
             raise UnauthorizedUserException()
@@ -127,6 +138,7 @@ class group_view_set(ModelViewSet):
 
     @action(methods=['get'], detail=True)
     def expenses(self, _request, pk=None) -> Response:
+        '''Handle GET method on expense'''
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
             raise UnauthorizedUserException()
@@ -136,6 +148,7 @@ class group_view_set(ModelViewSet):
 
     @action(methods=['get'], detail=True)
     def balances(self, _request, pk=None) -> Response:
+        '''Handle GET method on balances'''
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
             raise UnauthorizedUserException()
@@ -168,10 +181,12 @@ class group_view_set(ModelViewSet):
 
 
 class expenses_view_set(ModelViewSet):
+    '''View Set for Expense'''
     queryset: QuerySet = Expenses.objects.all()
     serializer_class: ExpensesSerializer = ExpensesSerializer
 
     def get_queryset(self):
+        '''Returns the queryset for Expenses'''
         user = self.request.user
         if self.request.query_params.get('q', None) is not None:
             expenses = Expenses.objects.filter(users__in=user.expenses.all())\
@@ -185,6 +200,7 @@ class expenses_view_set(ModelViewSet):
 @authentication_classes([])
 @permission_classes([])
 def logProcessor(request) -> Response:
+    '''Handle POST method on log files'''
     data = request.data
     num_threads = data['parallelFileProcessingCount']
     log_files = data['logFiles']
@@ -204,15 +220,16 @@ def logProcessor(request) -> Response:
 
 
 def sort_by_time_stamp(logs) -> list:
+    '''Sort logs by Time Stamp'''
     data = []
     for log in logs:
         data.append(log.split(" "))
-    # print(data)
     data = sorted(data, key=lambda elem: elem[1])
     return data
 
 
 def response_format(raw_data) -> list:
+    '''Format a response'''
     response = []
     for timestamp, data in raw_data.items():
         entry = {'timestamp': timestamp}
@@ -226,6 +243,7 @@ def response_format(raw_data) -> list:
 
 
 def aggregate(cleaned_logs) -> dict:
+    '''Aggregate cleaned logs'''
     data = {}
     for log in cleaned_logs:
         [key, text] = log
@@ -236,6 +254,7 @@ def aggregate(cleaned_logs) -> dict:
 
 
 def transform(logs) -> list:
+    '''Clean up logs'''
     result = []
     for log in logs:
         [_, timestamp, text] = log
@@ -263,14 +282,14 @@ def transform(logs) -> list:
 
 
 def reader(url, timeout):
+    '''Read a file and return it's data'''
     with urllib.request.urlopen(url, timeout=timeout) as conn:
+        # TODO: Check if this closes the open file
         return conn.read()
 
 
 def multiThreadedReader(urls, num_threads) -> list:
-    """
-        Read multiple files through HTTP
-    """
+    """Read multiple files through HTTP"""
     result = []
     for url in urls:
         data = reader(url, 60)
