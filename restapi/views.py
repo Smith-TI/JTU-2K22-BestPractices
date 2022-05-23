@@ -201,7 +201,7 @@ class ExpensesViewSet(ModelViewSet):
 @api_view(['post'])
 @authentication_classes([])
 @permission_classes([])
-def logProcessor(request) -> Response:
+def process_logs(request) -> Response:
     '''Handle POST method on processing log files'''
     starttime = int(time.time() * 1000.0)
 

@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken import views
 
 from restapi.views import UserViewSet, CategoryViewSet, GroupViewSet, ExpensesViewSet, \
-    index, logout, balance, logProcessor
+    index, logout, balance, process_logs
 
 
 router: DefaultRouter = DefaultRouter()
@@ -19,7 +19,7 @@ urlpatterns: list[Union[URLResolver, URLPattern]] = [
     path('auth/logout/', logout),
     path('auth/login/', views.obtain_auth_token),
     path('balances/', balance),
-    path('process-logs/', logProcessor)
+    path('process-logs/', process_logs)
 ]
 
 urlpatterns += router.urls
