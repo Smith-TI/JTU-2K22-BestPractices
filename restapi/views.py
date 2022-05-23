@@ -17,7 +17,7 @@ from restapi.serializers import CategorySerializer, Expenses, ExpensesSerializer
 from restapi.custom_exception import UnauthorizedUserException
 from django.db.models import QuerySet
 
-from restapi.utils import aggregate_logs, clean_up_logs, multiThreadedReader, normalize, response_format, sort_logs_by_time_stamp
+from restapi.utils import aggregate_logs, clean_up_logs, multi_threaded_url_reader, normalize, response_format, sort_logs_by_time_stamp
 
 
 def index(_request) -> HttpResponse:
@@ -221,7 +221,7 @@ def logProcessor(request) -> Response:
         logging.error('No log files provided in request')
         return Response({"status": "failure", "reason": "No log files provided in request"},
                         status=status.HTTP_400_BAD_REQUEST)
-    logs = multiThreadedReader(
+    logs = multi_threaded_url_reader(
         urls=data['logFiles'], num_threads=data['parallelFileProcessingCount'])
     sorted_logs = sort_logs_by_time_stamp(logs)
     cleaned = clean_up_logs(sorted_logs)

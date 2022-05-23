@@ -95,7 +95,7 @@ def clean_up_logs(logs) -> list:
     return result
 
 
-def multiThreadedReader(urls) -> list:
+def multi_threaded_url_reader(urls) -> list:
     """Read multiple files through HTTP"""
     result = []
     for url in urls:
