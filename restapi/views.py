@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from decimal import Decimal
-import logging
+from logger import logger
 from time import time
 
 from django.http import HttpResponse
@@ -48,7 +48,7 @@ def balance(request) -> Response:
     user = request.user
 
     starttime = int(time.time() * 1000.0)
-    logging.info(f"Calculating balance for {user}")
+    logger.info(f"Calculating balance for {user}")
     expenses = Expenses.objects.filter(users__in=user.expenses.all())
     final_balance = {}
     for expense in expenses:
@@ -67,7 +67,7 @@ def balance(request) -> Response:
     response = [{"user": k, "amount": int(v)}
                 for k, v in final_balance.items()]
     endtime = int(time.time() * 1000.0)
-    logging.info(f'Calculated balance in {endtime - starttime}ms')
+    logger.info(f'Calculated balance in {endtime - starttime}ms')
     return Response(response, status=200)
 
 
@@ -145,7 +145,7 @@ class GroupViewSet(ModelViewSet):
     def balances(self, pk=None) -> Response:
         '''Handle GET method on balances'''
         starttime = int(time.time() * 1000.0)
-        logging.info(f"Getting balance for Group with id: {pk}")
+        logger.info(f"Getting balance for Group with id: {pk}")
         group = Groups.objects.get(id=pk)
         if group not in self.get_queryset():
             raise UnauthorizedUserException()
@@ -174,7 +174,7 @@ class GroupViewSet(ModelViewSet):
             else:
                 end -= 1
         endtime = int(time.time() * 1000.0)
-        logging.info(
+        logger.info(
             f"Calculated balance for Group with id: {pk} in {endtime - starttime}ms")
         return Response(balances, status=200)
 
@@ -211,14 +211,14 @@ def process_logs(request) -> Response:
     data = request.data
     num_threads = data['parallelFileProcessingCount']
     log_files = data['logFiles']
-    logging.info(
+    logger.info(
         f'starting log processor with {num_threads} threads and {len(log_files)} log files')
     if num_threads <= 0 or num_threads > 30:
-        logging.error('Parallel Processing Count out of expected bounds')
+        logger.error('Parallel Processing Count out of expected bounds')
         return Response({"status": "failure", "reason": "Parallel Processing Count out of expected bounds"},
                         status=status.HTTP_400_BAD_REQUEST)
     if len(log_files) == 0:
-        logging.error('No log files provided in request')
+        logger.error('No log files provided in request')
         return Response({"status": "failure", "reason": "No log files provided in request"},
                         status=status.HTTP_400_BAD_REQUEST)
     logs = multi_threaded_url_reader(
@@ -228,5 +228,5 @@ def process_logs(request) -> Response:
     data = aggregate_logs(cleaned)
     response = response_format(data)
     endtime = int(time.time() * 1000.0)
-    logging.info(f'Processed log files in {endtime - starttime}ms')
+    logger.info(f'Processed log files in {endtime - starttime}ms')
     return Response({"response": response}, status=status.HTTP_200_OK)

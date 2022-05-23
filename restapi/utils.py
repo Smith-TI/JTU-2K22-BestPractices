@@ -1,5 +1,5 @@
 from datetime import datetime
-import logging
+import logger
 from time import time
 import urllib.request
 import concurrent.futures
@@ -31,7 +31,7 @@ def normalize(expense) -> list:
         else:
             end -= 1
     endtime = int(time.time() * 1000.0)
-    logging.info(f'Normalized expense in {endtime - starttime}ms')
+    logger.info(f'Normalized expense in {endtime - starttime}ms')
     return balances
 
 
