@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 from time import time
 import urllib.request
+import concurrent.futures
 
 from restapi.constants import LOG_FILES_READER_TIMEOUT
 
@@ -67,6 +68,7 @@ def aggregate_logs(cleaned_logs) -> dict:
         data[key] = value
     return data
 
+
 def clean_up_logs(logs) -> list:
     '''Clean up logs'''
     result = []
@@ -98,10 +100,15 @@ def clean_up_logs(logs) -> list:
 def multi_threaded_url_reader(urls) -> list:
     """Read multiple files through HTTP"""
     result = []
-    for url in urls:
+
+    def download(url):
         with urllib.request.urlopen(url, timeout=LOG_FILES_READER_TIMEOUT) as conn:
             data = conn.read()
             data = data.decode('utf-8')
             result.extend(data.split("\n"))
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(download, urls)
+
     result = sorted(result, key=lambda elem: elem[1])
     return result
