@@ -71,21 +71,21 @@ def balance(request) -> Response:
     return Response(response, status=200)
 
 
-class user_view_set(ModelViewSet):
+class UserViewSet(ModelViewSet):
     '''View Set for a User'''
     queryset: QuerySet = User.objects.all()
     serializer_class: UserSerializer = UserSerializer
     permission_classes: tuple = (AllowAny,)
 
 
-class category_view_set(ModelViewSet):
+class CategoryViewSet(ModelViewSet):
     '''View Set for a Category'''
     queryset: QuerySet = Category.objects.all()
     serializer_class: CategorySerializer = CategorySerializer
     http_method_names: list[str] = ['get', 'post']
 
 
-class group_view_set(ModelViewSet):
+class GroupViewSet(ModelViewSet):
     '''View Set for a Group'''
     queryset: QuerySet = Groups.objects.all()
     serializer_class: GroupSerializer = GroupSerializer
@@ -179,7 +179,7 @@ class group_view_set(ModelViewSet):
         return Response(balances, status=200)
 
 
-class expenses_view_set(ModelViewSet):
+class ExpensesViewSet(ModelViewSet):
     '''View Set for Expense'''
     queryset: QuerySet = Expenses.objects.all()
     serializer_class: ExpensesSerializer = ExpensesSerializer

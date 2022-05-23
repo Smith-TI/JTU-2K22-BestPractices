@@ -4,15 +4,15 @@ from django.urls import URLPattern, URLResolver, path
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken import views
 
-from restapi.views import user_view_set, category_view_set, group_view_set, expenses_view_set, index, logout, balance, \
-    logProcessor
+from restapi.views import UserViewSet, CategoryViewSet, GroupViewSet, ExpensesViewSet, \
+    index, logout, balance, logProcessor
 
 
 router: DefaultRouter = DefaultRouter()
-router.register('users', user_view_set)
-router.register('categories', category_view_set)
-router.register('groups', group_view_set)
-router.register('expenses', expenses_view_set)
+router.register('users', UserViewSet)
+router.register('categories', CategoryViewSet)
+router.register('groups', GroupViewSet)
+router.register('expenses', ExpensesViewSet)
 
 urlpatterns: list[Union[URLResolver, URLPattern]] = [
     path('', index, name='index'),
